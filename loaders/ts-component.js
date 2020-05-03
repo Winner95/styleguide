@@ -54,7 +54,7 @@ const setMeta = (doc, resourcePath, source) => {
     /* eslint-enable no-useless-escape */
 
     return results;
-}
+};
 
 const useGenericParser = (source, options) => {
     return reactDocs.parse(
@@ -70,13 +70,13 @@ const useGenericParser = (source, options) => {
             },
         }
     );
-}
+};
 
 const useTSParser = (resourcePath, tsConfigPath) => {
     return reactDocsTS.withCustomConfig(tsConfigPath).parse(resourcePath, {
         filename: '',
     });
-}
+};
 
 const syncComponentGeneration = (parameters, callbackHandler) => {
     const { source, options, resourcePath } = parameters;
@@ -150,7 +150,7 @@ const syncComponentGeneration = (parameters, callbackHandler) => {
     callbackHandler(null, results);
 
     return;
-}
+};
 
 module.exports = function(source) {
     if (this.cacheable) {
@@ -168,5 +168,4 @@ module.exports = function(source) {
 
         callback(null, result);
     });
-
 };
