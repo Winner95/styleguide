@@ -5,7 +5,7 @@ const setParamsTypeDefinitionFromFunctionType = require('typescript-react-functi
 const loaderUtils = require('loader-utils');
 const { isDebug } = require('../build-arguments');
 
-function setMeta(doc, resourcePath, source) {
+const setMeta = (doc, resourcePath, source) => {
     const meta = {
         name: doc.displayName,
         description: doc.description,
@@ -56,7 +56,7 @@ function setMeta(doc, resourcePath, source) {
     return results;
 }
 
-function useGenericParser(source, options) {
+const useGenericParser = (source, options) => {
     return reactDocs.parse(
         source,
         reactDocs.resolver.findAllComponentDefinitions,
@@ -72,18 +72,14 @@ function useGenericParser(source, options) {
     );
 }
 
-function useTSParser(resourcePath, tsConfigPath) {
+const useTSParser = (resourcePath, tsConfigPath) => {
     return reactDocsTS.withCustomConfig(tsConfigPath).parse(resourcePath, {
         filename: '',
     });
 }
 
-module.exports = function(source) {
-    if (this.cacheable) {
-        this.cacheable();
-    }
-
-    const options = loaderUtils.getOptions(this);
+const syncComponentGeneration = (parameters, callbackHandler) => {
+    const { source, options, resourcePath } = parameters;
     let results;
 
     try {
@@ -91,17 +87,30 @@ module.exports = function(source) {
         /* currently we support the approach for the UI-architeture
         as 1 module - 1 component */
         if (doc.length && doc.length > 0) {
-            const filterName = path.parse(this.resourcePath).name.replace(/-/g, '');
-            doc = doc.find(item => item.displayName.toLowerCase() === filterName);
+            const filterName = path.parse(resourcePath).name.replace(/-/g, '');
+            const filterDocs = item => item.displayName.toLowerCase() === filterName;
+            const foundDoc = doc.find(filterDocs);
+
+            if (foundDoc) {
+                doc = foundDoc;
+            } else {
+                doc = doc[0];
+
+                if (isDebug) {
+                    const result = ` file ${resourcePath} has no definition for ${filterName}. We automatically use definitions from ${doc.displayName}. If it is not right definition, please rename your component to ${filterName} in proper notation, ${filterName} was written in lowercase for test only.`;
+
+                    console.log(result);
+                }
+            }
         }
 
-        results = setMeta(doc, this.resourcePath, source);
+        results = setMeta(doc, resourcePath, source);
     } catch (err) {
         if (err.message === `No suitable component definition found.`) {
             const tsConfigPath = options.tsConfigPath;
-            const docs = useTSParser(this.resourcePath, tsConfigPath);
+            const docs = useTSParser(resourcePath, tsConfigPath);
 
-            if (docs && source && this.resourcePath) {
+            if (docs && source && resourcePath) {
                 if (!docs[0]) {
                     return source;
                 }
@@ -111,14 +120,16 @@ module.exports = function(source) {
                 doc.displayName =
                     doc.displayName.charAt(0).toUpperCase() + doc.displayName.slice(1);
 
-                results = setMeta(doc, this.resourcePath, source);
+                results = setMeta(doc, resourcePath, source);
 
-                return results;
+                callbackHandler(err, results);
+
+                return;
             }
         }
 
         if (!/Multiple exported component definitions found/.test(err)) {
-            console.warn(this.resourcePath, isDebug ? err : err.message);
+            console.warn(resourcePath, isDebug ? err : err.message);
         }
 
         /* eslint-disable no-useless-escape */
@@ -133,7 +144,29 @@ module.exports = function(source) {
             export const __dependencyResolver = require.context('./', true, /\.(j|t)sx?/);`;
         }
         /* eslint-enable no-useless-escape */
+        callbackHandler(err, results);
     }
 
-    return results;
+    callbackHandler(null, results);
+
+    return;
+}
+
+module.exports = function(source) {
+    if (this.cacheable) {
+        this.cacheable();
+    }
+
+    const resourcePath = this.resourcePath;
+    const callback = this.async();
+    const options = loaderUtils.getOptions(this);
+
+    syncComponentGeneration({ resourcePath, source, options }, function(err, result) {
+        if (err) {
+            return callback(err, result);
+        }
+
+        callback(null, result);
+    });
+
 };
