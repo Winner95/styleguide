@@ -1,8 +1,0 @@
-/dist
-/node_modules
-/temp
-.eslintcache
-yarn.lock
-.DS_Store
-yarn-error.log
-coverage
