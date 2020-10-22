@@ -80,8 +80,8 @@ module.exports = function getWebpackConfig({
     const compilerOptions = getTypescriptCompilerOptions
         ? getTypescriptCompilerOptions()
         : {
-              noEmit: false,
-          };
+            noEmit: false,
+        };
     const genericTsLoader = {
         loader: 'ts-loader',
         options: {
@@ -103,10 +103,10 @@ module.exports = function getWebpackConfig({
     const jsLoaderExceptionList =
         exceptionsList && exceptionsList.jsLoader
             ? [
-                  /node_modules\/(?!badoo-styleguide)/,
-                  path.resolve(__dirname, 'src/index.jsx'),
-                  ...exceptionsList.jsLoader,
-              ]
+                /node_modules\/(?!badoo-styleguide)/,
+                path.resolve(__dirname, 'src/index.jsx'),
+                ...exceptionsList.jsLoader,
+            ]
             : [/node_modules\/(?!badoo-styleguide)/, path.resolve(__dirname, 'src/index.jsx')];
 
     const tsLoaderExceptionList =
@@ -116,7 +116,7 @@ module.exports = function getWebpackConfig({
 
     return {
         mode: 'development',
-        devtool: 'cheap-module-eval-source-map',
+        devtool: 'cheap-module-source-map',
         entry: [
             `webpack-dev-server/client?${devServerUrl}`,
             'webpack/hot/dev-server',
@@ -133,6 +133,7 @@ module.exports = function getWebpackConfig({
             contentBase: path.resolve(__dirname, 'dist'),
             hot: true,
             open: true,
+            compress: true,
         },
         module: {
             rules: [
@@ -224,8 +225,6 @@ module.exports = function getWebpackConfig({
             modules: [path.resolve(__dirname, 'node_modules'), path.resolve(__dirname, 'loaders')],
         },
         plugins: [
-            new HtmlWebpackPlugin({ title: 'Frontend Styleguide' }),
-            new webpack.NamedModulesPlugin(),
             new webpack.HotModuleReplacementPlugin(),
             new webpack.DefinePlugin({
                 DEBUG: false,
