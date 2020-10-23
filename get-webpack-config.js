@@ -78,8 +78,8 @@ module.exports = function getWebpackConfig({
     const compilerOptions = getTypescriptCompilerOptions
         ? getTypescriptCompilerOptions()
         : {
-            noEmit: false,
-        };
+              noEmit: false,
+          };
     const genericTsLoader = {
         loader: 'ts-loader',
         options: {
@@ -101,10 +101,10 @@ module.exports = function getWebpackConfig({
     const jsLoaderExceptionList =
         exceptionsList && exceptionsList.jsLoader
             ? [
-                /node_modules\/(?!badoo-styleguide)/,
-                path.resolve(__dirname, 'src/index.jsx'),
-                ...exceptionsList.jsLoader,
-            ]
+                  /node_modules\/(?!badoo-styleguide)/,
+                  path.resolve(__dirname, 'src/index.jsx'),
+                  ...exceptionsList.jsLoader,
+              ]
             : [/node_modules\/(?!badoo-styleguide)/, path.resolve(__dirname, 'src/index.jsx')];
 
     const tsLoaderExceptionList =
