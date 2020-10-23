@@ -8,7 +8,7 @@ const args = require('./build-arguments');
 
 const webpack = require('webpack');
 const webpackMerge = require('webpack-merge');
-const WebpackDevServer = require('webpack-dev-server');
+const WebpackDevServer = require('webpack-dev-middleware');
 const getWebpackConfig = require('./get-webpack-config');
 
 if (!args.config) {
@@ -85,7 +85,10 @@ if (isCompiling) {
     });
 } else {
     const devServerOptions = Object.assign({}, ourWebpackConfig.devServer);
-    const server = new WebpackDevServer(compiler, devServerOptions);
+    const express = require('express');
+    const server = express();
+    server.use(WebpackDevServer(compiler, devServerOptions));
+    server.use(require("webpack-hot-middleware")(compiler, devServerOptions));
     server.listen(PORT, HOST, () => {
         console.log(`Starting server on http://${HOST}:${PORT}`);
     });

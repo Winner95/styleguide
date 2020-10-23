@@ -1,6 +1,7 @@
 /* eslint-env node */
 const path = require('path');
 const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { isDebug, buildDir } = require('./build-arguments');
 const getBabelOptions = require('./get-babel-options');
 
@@ -36,7 +37,6 @@ const resolveComponentPathsFromComponentRoots = (components, getComponentRoots) 
 };
 
 module.exports = function getWebpackConfig({
-    devServerUrl,
     buildDir,
     isReactNative,
     configPath,
@@ -78,8 +78,8 @@ module.exports = function getWebpackConfig({
     const compilerOptions = getTypescriptCompilerOptions
         ? getTypescriptCompilerOptions()
         : {
-              noEmit: false,
-          };
+            noEmit: false,
+        };
     const genericTsLoader = {
         loader: 'ts-loader',
         options: {
@@ -101,10 +101,10 @@ module.exports = function getWebpackConfig({
     const jsLoaderExceptionList =
         exceptionsList && exceptionsList.jsLoader
             ? [
-                  /node_modules\/(?!badoo-styleguide)/,
-                  path.resolve(__dirname, 'src/index.jsx'),
-                  ...exceptionsList.jsLoader,
-              ]
+                /node_modules\/(?!badoo-styleguide)/,
+                path.resolve(__dirname, 'src/index.jsx'),
+                ...exceptionsList.jsLoader,
+            ]
             : [/node_modules\/(?!badoo-styleguide)/, path.resolve(__dirname, 'src/index.jsx')];
 
     const tsLoaderExceptionList =
@@ -116,7 +116,6 @@ module.exports = function getWebpackConfig({
         mode: 'development',
         devtool: 'cheap-module-source-map',
         entry: [
-            `webpack-dev-server/client?${devServerUrl}`,
             'webpack/hot/dev-server',
             path.resolve(__dirname, 'src/index.jsx'),
         ],
@@ -132,6 +131,7 @@ module.exports = function getWebpackConfig({
             hot: true,
             open: true,
             compress: true,
+            publicPath: '/',
         },
         module: {
             rules: [
@@ -217,12 +217,16 @@ module.exports = function getWebpackConfig({
             modules: [path.resolve(__dirname, 'node_modules')],
             alias: {
                 __GLOBAL__CONFIG__: configPath,
+                'react-dom': '@hot-loader/react-dom',
             },
         },
         resolveLoader: {
             modules: [path.resolve(__dirname, 'node_modules'), path.resolve(__dirname, 'loaders')],
         },
         plugins: [
+            new HtmlWebpackPlugin({
+                title: 'Output Management',
+            }),
             new webpack.HotModuleReplacementPlugin(),
             new webpack.DefinePlugin({
                 DEBUG: false,
