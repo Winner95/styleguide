@@ -88,7 +88,7 @@ if (isCompiling) {
     const express = require('express');
     const server = express();
     server.use(WebpackDevServer(compiler, devServerOptions));
-    server.use(require("webpack-hot-middleware")(compiler, devServerOptions));
+    server.use(require('webpack-hot-middleware')(compiler, devServerOptions));
     server.listen(PORT, HOST, () => {
         console.log(`Starting server on http://${HOST}:${PORT}`);
     });
